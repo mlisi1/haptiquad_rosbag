@@ -1,12 +1,27 @@
 import os
 from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, ExecuteProcess
+from launch import LaunchDescription, LaunchContext
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, ExecuteProcess, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition
 from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
+
+def launch_setup(context):
+
+    default_terminal = os.getenv('TERM_PROGRAM', 'gnome-terminal')  # Fallback to GNOME Terminal
+
+    play_bag = ExecuteProcess(
+        cmd=[
+            default_terminal, '--', 'bash', '-c', 
+            '\"ros2 bag play -r {} {}\"'.format(LaunchConfiguration('bag_rate').perform(context), LaunchConfiguration('bag_path').perform(context))
+        ],
+        output='screen',
+        shell=True
+    )
+
+    return [play_bag]
 
 def generate_launch_description():
 
@@ -14,7 +29,6 @@ def generate_launch_description():
     force_arg = DeclareLaunchArgument('force', default_value='false', description='Launch extra nodes if true')
     residual_arg = DeclareLaunchArgument('residuals', default_value='false', description='Launch extra nodes if true')
     bag_rate_arg = DeclareLaunchArgument('bag_rate', default_value='0.3', description='Launch extra nodes if true')
-
 
     description_pkg = get_package_share_directory('anymal_c_simple_description')
     momobs_ros_pkg = get_package_share_directory('momobs_ros2')
@@ -33,7 +47,9 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('force')),
         parameters=[{
             'autoscale':True,
-            'listening':True
+            'listening':True,
+            'legs_prefix': ["LF", "LH", "RF", "RH"],
+            'foot_suffix': 'FOOT'
         }]
     )
 
@@ -44,16 +60,12 @@ def generate_launch_description():
         parameters=[{
             'autoscale':True,
             'listening':True,
-            'x_lim':3000
+            'x_lim':3000,
+            'legs_prefix': ["LF", "LH", "RF", "RH"],
         }]
     )
 
-
-    play_bag = ExecuteProcess(
-        cmd=['ros2', 'bag', 'play', '-r', LaunchConfiguration('bag_rate'), LaunchConfiguration('bag_path')],
-        output='screen'
-    )
-
+    load_func = OpaqueFunction(function = launch_setup)
 
 
     return LaunchDescription(
@@ -66,6 +78,6 @@ def generate_launch_description():
             momobs,
             force_plotter,
             residual_plotter,
-            play_bag
+            load_func
         ]
     )
