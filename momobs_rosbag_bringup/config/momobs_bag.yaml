@@ -1,0 +1,21 @@
+momobs_ros2:
+  ros__parameters:
+
+    observer:
+    
+      k_int: 100.0
+      k_ext: 100.0
+
+      rescale: true
+      expected_dt: 0.024
+      threshold: 0.03
+
+      friction:
+
+        friction: true
+        F_s: 0.02
+        F_c: 0.1
+
+    estimator:
+
+      num_contacts: 4

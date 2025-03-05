@@ -32,12 +32,18 @@ def generate_launch_description():
 
     description_pkg = get_package_share_directory('anymal_c_simple_description')
     momobs_ros_pkg = get_package_share_directory('momobs_ros2')
+    self_pkg = get_package_share_directory('momobs_rosbag_bringup')
+
+    momobs_config = os.path.join(self_pkg, 'config', 'momobs_bag.yaml')
 
 
     description_launch_file = os.path.join(description_pkg, 'launch', 'floating_base_description.launch.py')   
     momobs_launch_file = os.path.join(momobs_ros_pkg, 'launch', 'bag_wrapper.launch.py')
 
-    momobs = IncludeLaunchDescription(PythonLaunchDescriptionSource(momobs_launch_file))
+    momobs = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(momobs_launch_file),
+            launch_arguments={'config_file': momobs_config}.items()
+            )
     description = IncludeLaunchDescription(PythonLaunchDescriptionSource(description_launch_file))
 
 
