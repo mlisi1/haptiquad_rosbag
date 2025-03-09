@@ -55,7 +55,9 @@ def generate_launch_description():
             'autoscale':True,
             'listening':True,
             'legs_prefix': ["LF", "LH", "RF", "RH"],
-            'foot_suffix': 'FOOT'
+            'foot_suffix': 'FOOT',
+            'x_lim': 5.0,
+            'memory_limit': 2000,
         }]
     )
 
@@ -66,7 +68,8 @@ def generate_launch_description():
         parameters=[{
             'autoscale':True,
             'listening':True,
-            'x_lim':3000,
+            'x_lim':5.0,
+            'memory_limit': 2000,
             'legs_prefix': ["LF", "LH", "RF", "RH"],
         }]
     )
