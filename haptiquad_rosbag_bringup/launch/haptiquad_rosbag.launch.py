@@ -31,24 +31,24 @@ def generate_launch_description():
     bag_rate_arg = DeclareLaunchArgument('bag_rate', default_value='0.3', description='Launch extra nodes if true')
 
     description_pkg = get_package_share_directory('anymal_c_simple_description')
-    momobs_ros_pkg = get_package_share_directory('momobs_ros2')
-    self_pkg = get_package_share_directory('momobs_rosbag_bringup')
+    haptiquad_ros_pkg = get_package_share_directory('haptiquad_ros2')
+    self_pkg = get_package_share_directory('haptiquad_rosbag_bringup')
 
-    momobs_config = os.path.join(self_pkg, 'config', 'momobs_bag.yaml')
+    haptiquad_config = os.path.join(self_pkg, 'config', 'haptiquad_bag.yaml')
 
 
     description_launch_file = os.path.join(description_pkg, 'launch', 'floating_base_description.launch.py')   
-    momobs_launch_file = os.path.join(momobs_ros_pkg, 'launch', 'bag_wrapper.launch.py')
+    haptiquad_launch_file = os.path.join(haptiquad_ros_pkg, 'launch', 'bag_wrapper.launch.py')
 
-    momobs = IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(momobs_launch_file),
-            launch_arguments={'config_file': momobs_config}.items()
+    haptiquad = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(haptiquad_launch_file),
+            launch_arguments={'config_file': haptiquad_config}.items()
             )
     description = IncludeLaunchDescription(PythonLaunchDescriptionSource(description_launch_file))
 
 
     force_plotter = Node(
-        package='momobs_plot',
+        package='haptiquad_plot',
         executable='force_plotter.py',
         condition=IfCondition(LaunchConfiguration('force')),
         parameters=[{
@@ -62,14 +62,14 @@ def generate_launch_description():
     )
 
     residual_plotter = Node(
-        package='momobs_plot',
+        package='haptiquad_plot',
         executable='residual_plotter.py',
         condition=IfCondition(LaunchConfiguration('residuals')),
         parameters=[{
             'autoscale':True,
             'listening':True,
             'x_lim':5.0,
-            'memory_limit': 2000,
+            'memory_limit': 5000,
             'legs_prefix': ["LF", "LH", "RF", "RH"],
         }]
     )
@@ -84,7 +84,7 @@ def generate_launch_description():
             residual_arg,
             bag_rate_arg,
             description,
-            momobs,
+            haptiquad,
             force_plotter,
             residual_plotter,
             load_func

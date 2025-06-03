@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.1)
-project(momobs_rosbag_bringup)
+project(haptiquad_rosbag_bringup)
 
 find_package(ament_cmake)
 
