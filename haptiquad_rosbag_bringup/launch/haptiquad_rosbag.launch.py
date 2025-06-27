@@ -15,7 +15,7 @@ def launch_setup(context):
     play_bag = ExecuteProcess(
         cmd=[
             default_terminal, '--', 'bash', '-c', 
-            '\"ros2 bag play -r {} {}\"'.format(LaunchConfiguration('bag_rate').perform(context), LaunchConfiguration('bag_path').perform(context))
+            '\"ros2 bag play -p -r {} {}\"'.format(LaunchConfiguration('bag_rate').perform(context), LaunchConfiguration('bag_path').perform(context))
         ],
         output='screen',
         shell=True
@@ -30,6 +30,7 @@ def generate_launch_description():
     residual_arg = DeclareLaunchArgument('residuals', default_value='false', description='Launch extra nodes if true')
     bag_rate_arg = DeclareLaunchArgument('bag_rate', default_value='0.3', description='Launch extra nodes if true')
     estimate_contacts_arg = DeclareLaunchArgument('estimate_contacts', default_value='false', description='Wether to launch or not the contact estimation package')
+    no_tf_arg = DeclareLaunchArgument('no_tf', default_value='false', description='Use if no tf have been recorded: it will publish world-base tf from AnymalState msg')
 
     estimate_contacts = LaunchConfiguration("estimate_contacts")
 
@@ -39,6 +40,7 @@ def generate_launch_description():
     haptiquad_contacts_pkg = get_package_share_directory('haptiquad_contacts')
 
     haptiquad_config = os.path.join(self_pkg, 'config', 'haptiquad_bag.yaml')
+    contact_estimator_config = os.path.join(self_pkg, 'config', 'contact_estimator.yaml')
 
 
     description_launch_file = os.path.join(description_pkg, 'launch', 'floating_base_description.launch.py')   
@@ -53,8 +55,16 @@ def generate_launch_description():
 
     estimate_contacts_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(estimate_contacts_launch_file),
-        launch_arguments={'rviz': str(True), "plot": str(False)}.items(),
+        launch_arguments={'rviz': str(True), "plot": str(False), "config_file": contact_estimator_config}.items(),
         condition=IfCondition(estimate_contacts)
+    )
+
+
+    world_to_base = Node(
+        package="haptiquad_rosbag_bringup",
+        executable="msg_converter.py",
+        emulate_tty=True,
+        condition=IfCondition(LaunchConfiguration("no_tf"))
     )
 
 
@@ -106,8 +116,10 @@ def generate_launch_description():
             force_arg,
             residual_arg,
             bag_rate_arg,
+            no_tf_arg,
             description,
             haptiquad,
+            world_to_base,
             force_plotter,
             residual_plotter,
             estimate_contacts_arg,
